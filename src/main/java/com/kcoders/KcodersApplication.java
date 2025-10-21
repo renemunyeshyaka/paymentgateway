@@ -1,4 +1,4 @@
-
+/*
 
 package com.kcoders;
 
@@ -15,7 +15,18 @@ public class KcodersApplication {
  public static void main(String[] args) {
      SpringApplication.run(KcodersApplication.class, args);
  }
+}*/
+
+@SpringBootApplication
+public class KcodersApplication {
+    public static void main(String[] args) {
+        String port = System.getenv("PORT");
+        if (port == null) {
+            port = "8080"; // default for local development
+        }
+        SpringApplication app = new SpringApplication(KcodersApplication.class);
+        app.setDefaultProperties(Collections.singletonMap("server.port", port));
+        app.run(args);
+    }
 }
-
-
 
