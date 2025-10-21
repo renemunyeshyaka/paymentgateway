@@ -1,0 +1,503 @@
+/* verify-otp.css */
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header Styles */
+#header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+#header nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.logo {
+    font-size: 2rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: #333;
+}
+
+.logo span {
+    color: #667eea;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: #667eea;
+}
+
+.auth-buttons {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Button Styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #667eea;
+    border-color: #667eea;
+}
+
+.btn-outline:hover {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-full {
+    width: 100%;
+    justify-content: center;
+}
+
+/* OTP Verification Section */
+.otp-verification-section {
+    padding: 120px 0 60px;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.otp-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.otp-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    padding: 3rem;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.otp-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.back-to-login {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.back-link:hover {
+    color: #764ba2;
+}
+
+.otp-header h1 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.otp-header p {
+    color: #666;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.user-email {
+    font-weight: 600;
+    color: #667eea;
+    font-size: 1.1rem;
+}
+
+/* OTP Form Styles */
+.otp-form {
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.otp-inputs {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.otp-input {
+    width: 50px;
+    height: 60px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.otp-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.otp-input.filled {
+    border-color: #667eea;
+    background: white;
+}
+
+.form-text {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    text-align: center;
+    margin-top: 0.5rem;
+    display: none;
+}
+
+.error-message.show {
+    display: block;
+}
+
+/* Resend OTP */
+.resend-otp {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.resend-otp p {
+    color: #666;
+    margin-bottom: 0;
+}
+
+.resend-otp a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.resend-otp a:hover:not(.disabled) {
+    text-decoration: underline;
+}
+
+.resend-otp a.disabled {
+    color: #6c757d;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+.countdown {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+/* OTP Footer */
+.otp-footer {
+    text-align: center;
+    border-top: 1px solid #e1e5e9;
+    padding-top: 2rem;
+    margin-top: 2rem;
+}
+
+.otp-footer p {
+    color: #666;
+}
+
+.otp-footer a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.otp-footer a:hover {
+    text-decoration: underline;
+}
+
+/* Loading State */
+.btn-loading {
+    display: none;
+}
+
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.btn:disabled .btn-text {
+    display: none;
+}
+
+.btn:disabled .btn-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Footer Styles */
+footer {
+    background: #2c3e50;
+    color: white;
+    padding: 3rem 0 1rem;
+}
+
+.footer-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-logo {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.footer-logo span {
+    color: #667eea;
+}
+
+.footer-about p {
+    color: #bdc3c7;
+    margin-bottom: 1rem;
+}
+
+.social-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #34495e;
+    color: white;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+    background: #667eea;
+    transform: translateY(-2px);
+}
+
+.footer-links h3 {
+    color: white;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.footer-links ul {
+    list-style: none;
+}
+
+.footer-links li {
+    margin-bottom: 0.5rem;
+}
+
+.footer-links a {
+    color: #bdc3c7;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #667eea;
+}
+
+.footer-newsletter p {
+    color: #bdc3c7;
+    margin-bottom: 1rem;
+}
+
+.newsletter-form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.newsletter-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 5px;
+    background: #34495e;
+    color: white;
+}
+
+.newsletter-input::placeholder {
+    color: #95a5a6;
+}
+
+.newsletter-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.newsletter-btn:hover {
+    background: #764ba2;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid #34495e;
+    color: #bdc3c7;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-links {
+        display: none;
+    }
+    
+    .otp-card {
+        padding: 2rem;
+        margin: 1rem;
+    }
+    
+    .otp-inputs {
+        gap: 0.5rem;
+    }
+    
+    .otp-input {
+        width: 45px;
+        height: 55px;
+        font-size: 1.25rem;
+    }
+    
+    .auth-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+    
+    .newsletter-form {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .otp-card {
+        padding: 1.5rem;
+    }
+    
+    .otp-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .otp-inputs {
+        gap: 0.25rem;
+    }
+    
+    .otp-input {
+        width: 40px;
+        height: 50px;
+        font-size: 1.1rem;
+    }
+}

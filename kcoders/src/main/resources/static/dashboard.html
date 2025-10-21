@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Kcoders</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: white;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: black;
+            text-decoration: none;
+        }
+        
+        .logo span {
+            color: blue;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid #2c3e50;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .profile-pic.has-image {
+            background: none;
+            border-color: #667eea;
+        }
+
+        .profile-pic:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .dashboard-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            gap: 2rem;
+        }		
+		
+        
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu li {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .sidebar-menu li:last-child {
+            border-bottom: none;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-menu a:hover {
+            background: #f5f5f5;
+        }
+        
+        .sidebar-menu a.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .sidebar-menu i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .content-area {
+            flex: 1;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            min-height: 500px;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .welcome-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .welcome-card h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-card p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .user-info {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        
+        .user-info p {
+            margin: 0.5rem 0;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn-logout {
+            background: #e74c3c;
+        }
+        
+        .btn-logout:hover {
+            background: #c0392b;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+        }
+        
+        .upload-area i {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .basket-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .basket-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-right: 1rem;
+        }
+        
+        .basket-item-details {
+            flex: 1;
+        }
+        
+        .basket-item-price {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .payment-method {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .payment-option {
+            flex: 1;
+            min-width: 150px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-option:hover {
+            border-color: #667eea;
+        }
+        
+        .payment-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .support-ticket {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .ticket-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .status-open {
+            background: #ffeaa7;
+            color: #e17055;
+        }
+        
+        .status-closed {
+            background: #55efc4;
+            color: #00b894;
+        }
+
+        /* ========== RESPONSIVE STYLES ========== */
+        
+        /* Mobile menu toggle */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: black;
+        }
+        
+        /* Mobile-first responsive design */
+        @media (max-width: 1024px) {
+            .dashboard-container {
+                flex-direction: column;
+                gap: 1rem;
+                margin: 1rem auto;
+                padding: 0 1rem;
+            }
+            
+            .sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .content-area {
+                order: 1;
+                padding: 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                padding: 1rem;
+                flex-wrap: wrap;
+            }
+            
+            .logo {
+                font-size: 1.2rem;
+            }
+            
+            .header-right {
+                gap: 10px;
+            }
+            
+            .menu-toggle {
+                display: block;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            .sidebar.active {
+                display: block;
+            }
+            
+            .sidebar-menu a {
+                padding: 0.8rem 1rem;
+            }
+            
+            .welcome-card {
+                padding: 1.5rem;
+            }
+            
+            .welcome-card h1 {
+                font-size: 1.5rem;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .basket-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+            
+            .basket-item img {
+                margin-right: 0;
+            }
+            
+            .basket-item-details {
+                text-align: center;
+            }
+            
+            .payment-method {
+                flex-direction: column;
+            }
+            
+            .payment-option {
+                min-width: auto;
+            }
+            
+            .btn {
+                padding: 0.6rem 1.2rem;
+                margin: 0.25rem;
+                font-size: 0.9rem;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            .upload-area {
+                padding: 1.5rem;
+            }
+            
+            .upload-area i {
+                font-size: 2.5rem;
+            }
+
+            .profile-pic {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .header-right {
+                justify-content: center;
+            }
+            
+            .dashboard-container {
+                margin: 0.5rem auto;
+                padding: 0 0.5rem;
+            }
+            
+            .content-area {
+                padding: 0.8rem;
+            }
+            
+            .welcome-card {
+                padding: 1rem;
+            }
+            
+            .welcome-card h1 {
+                font-size: 1.3rem;
+            }
+            
+            .welcome-card p {
+                font-size: 1rem;
+            }
+            
+            .user-info {
+                padding: 1rem;
+            }
+            
+            .support-ticket {
+                padding: 1rem;
+            }
+            
+            .ticket-status {
+                font-size: 0.7rem;
+            }
+            
+            .modal-content {
+                padding: 1rem;
+            }
+            
+            .upload-area {
+                padding: 1rem;
+            }
+            
+            .upload-area i {
+                font-size: 2rem;
+            }
+
+            .profile-pic {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+        }
+        
+        /* Ensure touch-friendly elements */
+        @media (hover: none) {
+            .sidebar-menu a:hover {
+                background: transparent;
+            }
+            
+            .btn:hover {
+                background: #667eea;
+            }
+            
+            .btn-logout:hover {
+                background: #e74c3c;
+            }
+            
+            .payment-option:hover {
+                border-color: #ddd;
+            }
+            
+            .payment-option.selected:hover {
+                border-color: #667eea;
+            }
+
+            .profile-pic:hover {
+                transform: none;
+                box-shadow: none;
+            }
+        }
+        
+        /* Improve readability on small screens */
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            h3 {
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* Prevent horizontal scrolling */
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="index.html" class="logo">K<span>coders </span>Dashboard</a>
+        </div>
+        <div class="header-right">
+            <div class="profile-pic" id="profilePic">
+                <i class="fas fa-user"></i>
+            </div>
+            <button class="btn btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <div class="sidebar" id="sidebar">
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active" data-section="general"><i class="fas fa-home"></i> General</a></li>
+                <li><a href="#" data-section="profile"><i class="fas fa-user"></i> Profile Info</a></li>
+                <li><a href="#" data-section="basket"><i class="fas fa-shopping-basket"></i> Your Basket</a></li>
+                <li><a href="#" data-section="payment"><i class="fas fa-credit-card"></i> Payment</a></li>
+                <li><a href="#" data-section="refund"><i class="fas fa-undo"></i> Refund</a></li>
+                <li><a href="#" data-section="search"><i class="fas fa-search"></i> Search</a></li>
+                <li><a href="#" data-section="password"><i class="fas fa-key"></i> Change password</a></li>
+                <li><a href="#" data-section="social"><i class="fas fa-share-alt"></i> Social links</a></li>
+                <li><a href="#" data-section="support"><i class="fas fa-headset"></i> Support Team</a></li>
+            </ul>
+        </div>
+        
+        <div class="content-area">
+            <!-- General Section -->
+            <div class="content-section active" id="general">
+                <div class="welcome-card">
+                    <h1 id="welcomeTitle">Welcome to Your Dashboard!</h1>
+                    <p>You have successfully logged in to Kcoders.</p>
+                    <p>Your authentication was completed with OTP verification.</p>
+                    <div class="user-info" id="userInfo"></div>
+                    <div style="margin-top: 2rem;">
+                        <a href="index.html" class="btn">Go to Home</a>
+                        <button class="btn" onclick="showUserInfo()">Show My Info</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Info Section -->
+            <div class="content-section" id="profile">
+                <div class="welcome-card">
+                    <h1>Profile Information</h1>
+                    <p>Manage your personal information and profile settings.</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" placeholder="Enter your first name">
+                        </div>
+                        <div class="form-group">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" placeholder="Enter your last name">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" placeholder="Enter your email address">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" placeholder="Enter your phone number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bio">Bio</label>
+                        <textarea id="bio" placeholder="Tell us about yourself"></textarea>
+                    </div>
+                    
+                    <button class="btn">Update Profile</button>
+                </div>
+            </div>
+            
+            <!-- Your Basket Section -->
+            <div class="content-section" id="basket">
+                <div class="welcome-card">
+                    <h1>Your Basket</h1>
+                    <p>Review and manage your shopping basket.</p>
+                    
+                    <div class="basket-item">
+                        <img src="https://via.placeholder.com/80" alt="Product">
+                        <div class="basket-item-details">
+                            <h3>Premium Web Design Course</h3>
+                            <p>Learn modern web design techniques</p>
+                        </div>
+                        <div class="basket-item-price">$49.99</div>
+                        <button class="btn" style="margin-left: 1rem;">Remove</button>
+                    </div>
+                    
+                    <div class="basket-item">
+                        <img src="https://via.placeholder.com/80" alt="Product">
+                        <div class="basket-item-details">
+                            <h3>JavaScript Mastery Bundle</h3>
+                            <p>Complete JavaScript development course</p>
+                        </div>
+                        <div class="basket-item-price">$79.99</div>
+                        <button class="btn" style="margin-left: 1rem;">Remove</button>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                        <h3>Total: $129.98</h3>
+                        <button class="btn">Proceed to Checkout</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Section -->
+            <div class="content-section" id="payment">
+                <div class="welcome-card">
+                    <h1>Payment Methods</h1>
+                    <p>Manage your payment options and view payment history.</p>
+                    
+                    <h3>Select Payment Method</h3>
+                    <div class="payment-method">
+                        <div class="payment-option selected">
+                            <i class="fab fa-cc-visa" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                            <p>Credit Card</p>
+                        </div>
+                        <div class="payment-option">
+                            <i class="fab fa-paypal" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                            <p>PayPal</p>
+                        </div>
+                        <div class="payment-option">
+                            <i class="fas fa-university" style="font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                            <p>Bank Transfer</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expiryDate">Expiry Date</label>
+                            <input type="text" id="expiryDate" placeholder="MM/YY">
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" placeholder="123">
+                        </div>
+                    </div>
+                    
+                    <button class="btn">Save Payment Method</button>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h3>Payment History</h3>
+                        <p>No recent payments</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Refund Section -->
+            <div class="content-section" id="refund">
+                <div class="welcome-card">
+                    <h1>Refund Requests</h1>
+                    <p>Request a refund for your purchases.</p>
+                    
+                    <div class="form-group">
+                        <label for="refundOrder">Select Order</label>
+                        <select id="refundOrder">
+                            <option value="">Select an order</option>
+                            <option value="order1">Order #12345 - Premium Web Design Course</option>
+                            <option value="order2">Order #12346 - JavaScript Mastery Bundle</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="refundReason">Reason for Refund</label>
+                        <select id="refundReason">
+                            <option value="">Select a reason</option>
+                            <option value="changed-mind">Changed my mind</option>
+                            <option value="not-as-described">Product not as described</option>
+                            <option value="technical-issue">Technical issues</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="refundDetails">Additional Details</label>
+                        <textarea id="refundDetails" placeholder="Please provide more details about your refund request"></textarea>
+                    </div>
+                    
+                    <button class="btn">Submit Refund Request</button>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h3>Refund History</h3>
+                        <p>No refund requests yet</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Section -->
+            <div class="content-section" id="search">
+                <div class="welcome-card">
+                    <h1>Search</h1>
+                    <p>Find information across the platform.</p>
+                    
+                    <div class="form-group">
+                        <input type="text" placeholder="Enter search keywords...">
+                    </div>
+                    
+                    <button class="btn">Search</button>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h3>Recent Searches</h3>
+                        <ul>
+                            <li>Web development courses</li>
+                            <li>JavaScript tutorials</li>
+                            <li>Payment methods</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Change Password Section -->
+            <div class="content-section" id="password">
+                <div class="welcome-card">
+                    <h1>Change Password</h1>
+                    <p>Update your account password for enhanced security.</p>
+                    
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" placeholder="Enter current password">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" placeholder="Enter new password">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                    </div>
+                    
+                    <button class="btn">Update Password</button>
+                </div>
+            </div>
+            
+            <!-- Social Links Section -->
+            <div class="content-section" id="social">
+                <div class="welcome-card">
+                    <h1>Social Links</h1>
+                    <p>Connect your social media accounts.</p>
+                    
+                    <div class="form-group">
+                        <label for="facebook">Facebook</label>
+                        <input type="url" id="facebook" placeholder="https://facebook.com/yourprofile">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="twitter">Twitter</label>
+                        <input type="url" id="twitter" placeholder="https://twitter.com/yourprofile">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="linkedin">LinkedIn</label>
+                        <input type="url" id="linkedin" placeholder="https://linkedin.com/in/yourprofile">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="instagram">Instagram</label>
+                        <input type="url" id="instagram" placeholder="https://instagram.com/yourprofile">
+                    </div>
+                    
+                    <button class="btn">Save Social Links</button>
+                </div>
+            </div>
+            
+            <!-- Support Team Section -->
+            <div class="content-section" id="support">
+                <div class="welcome-card">
+                    <h1>Support Team</h1>
+                    <p>Contact our support team for assistance.</p>
+                    
+                    <div class="form-group">
+                        <label for="supportSubject">Subject</label>
+                        <input type="text" id="supportSubject" placeholder="Enter subject">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="supportMessage">Message</label>
+                        <textarea id="supportMessage" placeholder="Describe your issue in detail"></textarea>
+                    </div>
+                    
+                    <button class="btn">Submit Ticket</button>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h3>Recent Support Tickets</h3>
+                        
+                        <div class="support-ticket">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4>Payment issue with order #12345</h4>
+                                <span class="ticket-status status-open">Open</span>
+                            </div>
+                            <p>Submitted: 2 days ago</p>
+                        </div>
+                        
+                        <div class="support-ticket">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h4>Course access problem</h4>
+                                <span class="ticket-status status-closed">Closed</span>
+                            </div>
+                            <p>Submitted: 1 week ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Picture Modal -->
+    <div class="modal" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Update Profile Picture</h2>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Click to Upload</h3>
+                <p>Upload a new profile picture (JPG, PNG, max 5MB)</p>
+                <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+            </div>
+            <div id="previewContainer" style="display: none; text-align: center; margin-bottom: 1.5rem;">
+                <img id="previewImage" src="" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 50%;">
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button class="btn" onclick="closeModal()">Cancel</button>
+                <button class="btn" id="saveProfileBtn" style="display: none;" onclick="saveProfilePicture()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        function checkAuth() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                const user = JSON.parse(currentUser);
+                document.getElementById('userInfo').innerHTML = `
+                    <p><strong>Full Name:</strong> ${user.firstName} ${user.lastName}</p>
+                    <p><strong>Email:</strong> ${user.email}</p>
+                    <p><strong>User ID:</strong> ${user.id}</p>					
+					<p><strong>Important note:</strong> </p>
+					<p>
+						We are waiting for license from our <a href="https://bk.rw/about/developer-portal">bank</a> to operate on national territory in the coming days.
+						From that time you will enjoy many othe features of the real-time online payment system with multiple languages. Meanwhile, we thank you for the trusting and working with us!
+					</p>
+					<p>Welcome to Kcoders.org!</p>
+					
+                `;
+                
+                // Update welcome title with user's name
+                document.getElementById('welcomeTitle').textContent = `Welcome to Your Dashboard ${user.firstName}!`;
+                
+                // Pre-fill profile form
+                document.getElementById('firstName').value = user.firstName || '';
+                document.getElementById('lastName').value = user.lastName || '';
+                document.getElementById('email').value = user.email || '';
+                
+                // Load saved profile picture if exists
+                const savedProfilePic = localStorage.getItem('profilePicture');
+                const profilePic = document.getElementById('profilePic');
+                
+                if (savedProfilePic) {
+                    // User has uploaded a profile picture
+                    profilePic.innerHTML = '';
+                    profilePic.style.background = 'none';
+                    profilePic.classList.add('has-image');
+                    const img = document.createElement('img');
+                    img.src = savedProfilePic;
+                    img.alt = 'Profile';
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.borderRadius = '50%';
+                    img.style.objectFit = 'cover';
+                    profilePic.appendChild(img);
+                } else {
+                    // Use dark default avatar with user initials
+                    profilePic.innerHTML = '';
+                    profilePic.style.background = 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)';
+                    profilePic.classList.remove('has-image');
+                    
+                    const userIcon = document.createElement('i');
+                    userIcon.className = 'fas fa-user';
+                    userIcon.style.color = 'white';
+                    userIcon.style.fontSize = '16px';
+                    profilePic.appendChild(userIcon);
+                    
+                    // Alternative: Use user initials
+                    /*
+                    const initials = getInitials(user.firstName, user.lastName);
+                    profilePic.textContent = initials;
+                    profilePic.style.fontWeight = 'bold';
+                    profilePic.style.color = 'white';
+                    profilePic.style.fontSize = '14px';
+                    */
+                }
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+            }
+        }
+        
+        // Helper function to get user initials
+        function getInitials(firstName, lastName) {
+            const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
+            const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
+            return firstInitial + lastInitial;
+        }
+        
+        function showUserInfo() {
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                const user = JSON.parse(currentUser);
+                alert(`User Information:\n\nName: ${user.firstName} ${user.lastName}\nEmail: ${user.email}\nID: ${user.id}`);
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('profilePicture');
+            window.location.href = 'login.html';
+        }
+        
+        // Menu switching functionality
+        document.querySelectorAll('.sidebar-menu a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all menu items
+                document.querySelectorAll('.sidebar-menu a').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Add active class to clicked menu item
+                this.classList.add('active');
+                
+                // Hide all content sections
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                
+                // Show the selected content section
+                const sectionId = this.getAttribute('data-section');
+                document.getElementById(sectionId).classList.add('active');
+                
+                // On mobile, close sidebar after selection
+                if (window.innerWidth <= 768) {
+                    document.getElementById('sidebar').classList.remove('active');
+                }
+            });
+        });
+        
+        // Profile picture modal functionality
+        function openProfileModal() {
+            document.getElementById('profileModal').style.display = 'flex';
+        }
+        
+        function closeModal() {
+            document.getElementById('profileModal').style.display = 'none';
+            document.getElementById('previewContainer').style.display = 'none';
+            document.getElementById('saveProfileBtn').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+        }
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Check file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size exceeds 5MB limit. Please choose a smaller file.');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('previewContainer').style.display = 'block';
+                    document.getElementById('saveProfileBtn').style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        function saveProfilePicture() {
+            const previewImage = document.getElementById('previewImage').src;
+            const profilePic = document.getElementById('profilePic');
+            
+            // Update profile picture display
+            profilePic.innerHTML = '';
+            profilePic.style.background = 'none';
+            profilePic.classList.add('has-image');
+            const img = document.createElement('img');
+            img.src = previewImage;
+            img.alt = 'Profile';
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.borderRadius = '50%';
+            img.style.objectFit = 'cover';
+            profilePic.appendChild(img);
+            
+            // Save to localStorage
+            localStorage.setItem('profilePicture', previewImage);
+            closeModal();
+            alert('Profile picture updated successfully!');
+        }
+        
+        // Payment method selection
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.payment-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+        
+        // Mobile menu toggle
+        document.getElementById('menuToggle').addEventListener('click', function() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menuToggle');
+            
+            if (window.innerWidth <= 768 && 
+                sidebar.classList.contains('active') &&
+                !sidebar.contains(event.target) &&
+                !menuToggle.contains(event.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Add event listener to profile picture
+        document.getElementById('profilePic').addEventListener('click', openProfileModal);
+        
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', checkAuth);
+    </script>
+</body>
+</html>
