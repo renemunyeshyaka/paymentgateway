@@ -1,9 +1,11 @@
-FROM openjdk:17-jdk-alpine
+FROM maven:3.8.6-openjdk-17
 
 WORKDIR /app
+COPY . .
 
-COPY target/user-kcoders-0.0.1-SNAPSHOT.jar app.jar
+# Build and run in one stage
+RUN mvn clean package -DskipTests
 
-EXPOSE 8080
+EXPOSE 10000
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-jar", "target/user-kcoders-0.0.1-SNAPSHOT.jar"]
