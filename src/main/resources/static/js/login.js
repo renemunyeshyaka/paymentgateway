@@ -2,7 +2,8 @@
 class AuthSystem {
     constructor() {
         this.currentForm = 'login';
-        this.BASE_URL = 'http://localhost:10000/api/auth';
+        this.BASE_URL = 'https://kcoders.onrender.com/api/auth';
+//		this.BASE_URL = 'http://localhost:10000/api/auth';
         this.initializeEventListeners();
     }
 

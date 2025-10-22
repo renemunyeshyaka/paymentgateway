@@ -1,6 +1,6 @@
 class OTPVerification {
     constructor() {
-        this.BASE_URL = 'http://localhost:10000/api/auth';
+        this.BASE_URL = 'https://kcoders.onrender.com/api/auth';
         this.timer = null;
         this.timeLeft = 60;
         this.initialize();

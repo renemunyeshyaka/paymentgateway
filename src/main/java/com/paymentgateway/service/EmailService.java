@@ -36,8 +36,8 @@ public class EmailService {
             System.out.println("=== ACTIVATION EMAIL (DEVELOPMENT) ===");
             System.out.println("To: " + toEmail);
             System.out.println("User: " + userName);
-            System.out.println("Activation Link: http://localhost:10000/api/auth/activate?email=" + toEmail);
-            //System.out.println("Activation Link: http://dpg-d3r70femcj7s73bmmfe0-a.oregon-postgres.render.com:10000/api/auth/activate?email=" + toEmail);
+            System.out.println("Activation Link: https://kcoders.onrender.com/api/auth/activate?email=" + toEmail); 
+            //System.out.println("Activation Link: http://localhost:10000/api/auth/activate?email=" + toEmail);
             System.out.println("=======================================");
             return;
         }
