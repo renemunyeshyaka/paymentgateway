@@ -123,7 +123,8 @@ public class UserService implements UserDetailsService {
                 try {
                     String userName = savedUser.getFirstName() + " " + savedUser.getLastName();
                     System.out.println("📧 Sending activation email to: " + savedUser.getEmail());
-                    emailService.sendActivationEmail(savedUser.getEmail(), userName, activationToken);
+                    //emailService.sendActivationEmail(savedUser.getEmail(), userName, activationToken);
+                    emailService.sendActivationEmail(savedUser.getEmail(), userName);
                 } catch (Exception emailException) {
                     System.out.println("⚠️ Activation email failed, but user was registered: " + emailException.getMessage());
                     // Don't throw the exception - user is still registered successfully
