@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -91,128 +92,204 @@ public class AuthController {
         }
     }
 
+	/*
+	 * @PostMapping("/login") public ResponseEntity<?> initiateLogin(@RequestBody
+	 * LoginRequest loginRequest) { try {
+	 * System.out.println("🔐 LOGIN: Attempt for: " + loginRequest.getEmail());
+	 * 
+	 * // Validate input if (loginRequest.getEmail() == null ||
+	 * loginRequest.getEmail().trim().isEmpty()) { return
+	 * ResponseEntity.badRequest().body(createErrorResponse("Email is required")); }
+	 * 
+	 * if (loginRequest.getPassword() == null ||
+	 * loginRequest.getPassword().trim().isEmpty()) { return
+	 * ResponseEntity.badRequest().body(createErrorResponse("Password is required"))
+	 * ; }
+	 * 
+	 * // Authenticate using Spring Security Authentication authentication =
+	 * authenticationManager.authenticate( new UsernamePasswordAuthenticationToken(
+	 * loginRequest.getEmail(), loginRequest.getPassword() ) );
+	 * 
+	 * System.out.println("✅ Authentication successful for: " +
+	 * loginRequest.getEmail());
+	 * 
+	 * // Generate and send OTP - NOW RETURNS MAP WITH OTP Map<String, String>
+	 * otpResponse = userService.generateAndSendOtp(loginRequest.getEmail()); String
+	 * otp = otpResponse.get("otp");
+	 * 
+	 * System.out.println("📧 OTP generated for: " + loginRequest.getEmail() +
+	 * " - OTP: " + otp);
+	 * 
+	 * // Return the OTP in response for testing Map<String, Object> response = new
+	 * HashMap<>(); response.put("message",
+	 * "OTP sent to your email. Please verify to complete login.");
+	 * response.put("email", loginRequest.getEmail()); response.put("otp", otp); //
+	 * Include OTP in response for testing response.put("note",
+	 * "Use this OTP for verification. Check console for details.");
+	 * 
+	 * return ResponseEntity.ok(response);
+	 * 
+	 * } catch (Exception e) { System.out.println("❌ Login failed: " +
+	 * e.getMessage()); return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	 * .body(createErrorResponse("Invalid email or password")); } }
+	 */
+    
+ // In your AuthController.java
     @PostMapping("/login")
-    public ResponseEntity<?> initiateLogin(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            System.out.println("🔐 LOGIN: Attempt for: " + loginRequest.getEmail());
+            System.out.println("🔐 Login attempt for: " + loginRequest.getEmail());
             
-            // Validate input
-            if (loginRequest.getEmail() == null || loginRequest.getEmail().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(createErrorResponse("Email is required"));
-            }
-            
-            if (loginRequest.getPassword() == null || loginRequest.getPassword().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(createErrorResponse("Password is required"));
-            }
-
-            // Authenticate using Spring Security
+            // First, authenticate the user
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                    loginRequest.getEmail(),
+                    loginRequest.getEmail(), 
                     loginRequest.getPassword()
                 )
-            );
-
-            System.out.println("✅ Authentication successful for: " + loginRequest.getEmail());
-
-            // Generate and send OTP - NOW RETURNS MAP WITH OTP
-            Map<String, String> otpResponse = userService.generateAndSendOtp(loginRequest.getEmail());
-            String otp = otpResponse.get("otp");
-            
-            System.out.println("📧 OTP generated for: " + loginRequest.getEmail() + " - OTP: " + otp);
-            
-            // Return the OTP in response for testing
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "OTP sent to your email. Please verify to complete login.");
-            response.put("email", loginRequest.getEmail());
-            response.put("otp", otp); // Include OTP in response for testing
-            response.put("note", "Use this OTP for verification. Check console for details.");
-            
-            return ResponseEntity.ok(response);
-            
-        } catch (Exception e) {
-            System.out.println("❌ Login failed: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(createErrorResponse("Invalid email or password"));
-        }
-    }
-
-    @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtpAndLogin(@RequestBody OtpVerificationRequest otpRequest) {
-        try {
-            System.out.println("🔑 OTP VERIFY: For: " + otpRequest.getEmail());
-            
-            if (otpRequest.getEmail() == null || otpRequest.getEmail().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(createErrorResponse("Email is required"));
-            }
-            
-            if (otpRequest.getOtp() == null || otpRequest.getOtp().trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(createErrorResponse("OTP is required"));
-            }
-
-            // Verify OTP
-            boolean otpValid = userService.verifyOtp(otpRequest.getEmail(), otpRequest.getOtp());
-            
-            if (!otpValid) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(createErrorResponse("Invalid or expired OTP"));
-            }
-
-            // Complete authentication
-            User user = (User) userService.loadUserByUsername(otpRequest.getEmail());
-            Authentication authentication = new UsernamePasswordAuthenticationToken(
-                user, null, user.getAuthorities()
             );
             
             SecurityContextHolder.getContext().setAuthentication(authentication);
             
-            // Remove sensitive data
-            user.setPassword(null);
-            user.setOtp(null);
+            User user = (User) authentication.getPrincipal();
+            System.out.println("✅ Password authentication successful for: " + user.getEmail());
             
+            // Check if user is active
+            if (!user.getIsActive()) {
+                System.out.println("❌ User not active: " + user.getEmail());
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Account not activated. Please check your email."));
+            }
+            
+            // Generate OTP and return it directly for testing
+            Map<String, String> otpResponse = userService.generateAndSendOtp(user.getEmail());
+            
+            // Return OTP in response for easy testing
             Map<String, Object> response = new HashMap<>();
-            response.put("message", "Login successful");
-            response.put("user", user);
+            response.put("message", "OTP sent to your email");
+            response.put("otp", otpResponse.get("otp")); // Include OTP for testing
+            response.put("email", user.getEmail());
+            response.put("note", "Use this OTP for verification");
+            
+            System.out.println("🎯 OTP for login: " + otpResponse.get("otp"));
             
             return ResponseEntity.ok(response);
             
+        } catch (BadCredentialsException e) {
+            System.out.println("❌ Invalid credentials for: " + loginRequest.getEmail());
+            return ResponseEntity.status(401)
+                .body(Map.of("error", "Invalid email or password"));
         } catch (Exception e) {
-            System.out.println("❌ OTP verification failed: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("OTP verification failed"));
+            System.out.println("💥 Login error: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "Login failed: " + e.getMessage()));
         }
     }
-
-    // ADD THIS ENDPOINT - Resend OTP
-    @PostMapping("/resend-otp")
-    public ResponseEntity<?> resendOtp(@RequestBody ResendOtpRequest request) {
+    
+    
+    
+	/*
+	 * @PostMapping("/verify-otp") public ResponseEntity<?>
+	 * verifyOtpAndLogin(@RequestBody OtpVerificationRequest otpRequest) { try {
+	 * System.out.println("🔑 OTP VERIFY: For: " + otpRequest.getEmail());
+	 * 
+	 * if (otpRequest.getEmail() == null || otpRequest.getEmail().trim().isEmpty())
+	 * { return
+	 * ResponseEntity.badRequest().body(createErrorResponse("Email is required")); }
+	 * 
+	 * if (otpRequest.getOtp() == null || otpRequest.getOtp().trim().isEmpty()) {
+	 * return
+	 * ResponseEntity.badRequest().body(createErrorResponse("OTP is required")); }
+	 * 
+	 * // Verify OTP boolean otpValid = userService.verifyOtp(otpRequest.getEmail(),
+	 * otpRequest.getOtp());
+	 * 
+	 * if (!otpValid) { return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	 * .body(createErrorResponse("Invalid or expired OTP")); }
+	 * 
+	 * // Complete authentication User user = (User)
+	 * userService.loadUserByUsername(otpRequest.getEmail()); Authentication
+	 * authentication = new UsernamePasswordAuthenticationToken( user, null,
+	 * user.getAuthorities() );
+	 * 
+	 * SecurityContextHolder.getContext().setAuthentication(authentication);
+	 * 
+	 * // Remove sensitive data user.setPassword(null); user.setOtp(null);
+	 * 
+	 * Map<String, Object> response = new HashMap<>(); response.put("message",
+	 * "Login successful"); response.put("user", user);
+	 * 
+	 * return ResponseEntity.ok(response);
+	 * 
+	 * } catch (Exception e) { System.out.println("❌ OTP verification failed: " +
+	 * e.getMessage()); return
+	 * ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	 * .body(createErrorResponse("OTP verification failed")); } }
+	 * 
+	 * // ADD THIS ENDPOINT - Resend OTP
+	 * 
+	 * @PostMapping("/resend-otp") public ResponseEntity<?> resendOtp(@RequestBody
+	 * ResendOtpRequest request) { try { String email = request.getEmail();
+	 * System.out.println("📧 RESEND OTP: Request for: " + email);
+	 * 
+	 * if (email == null || email.trim().isEmpty()) { return
+	 * ResponseEntity.badRequest().body(createErrorResponse("Email is required")); }
+	 * 
+	 * // Generate and send new OTP - NOW RETURNS MAP WITH OTP Map<String, String>
+	 * otpResponse = userService.generateAndSendOtp(email); String otp =
+	 * otpResponse.get("otp");
+	 * 
+	 * System.out.println("📧 New OTP sent to: " + email + " - OTP: " + otp);
+	 * 
+	 * // Return OTP in response for testing Map<String, Object> response = new
+	 * HashMap<>(); response.put("message", "New OTP sent to your email");
+	 * response.put("email", email); response.put("otp", otp); // Include OTP in
+	 * response for testing response.put("note",
+	 * "Use this new OTP for verification");
+	 * 
+	 * return ResponseEntity.ok(response);
+	 * 
+	 * } catch (Exception e) { System.out.println("❌ Resend OTP failed: " +
+	 * e.getMessage()); return
+	 * ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	 * .body(createErrorResponse("Failed to resend OTP: " + e.getMessage())); } }
+	 */
+    
+    @PostMapping("/verify-otp-simple")
+    public ResponseEntity<?> verifyOtpSimple(@RequestBody OtpVerificationRequest request) {
         try {
-            String email = request.getEmail();
-            System.out.println("📧 RESEND OTP: Request for: " + email);
+            System.out.println("🔧 Verifying OTP for: " + request.getEmail());
             
-            if (email == null || email.trim().isEmpty()) {
-                return ResponseEntity.badRequest().body(createErrorResponse("Email is required"));
+            boolean isValid = userService.verifyOtp(request.getEmail(), request.getOtp());
+            
+            if (isValid) {
+                // Generate JWT token
+                User user = userService.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+                
+                String token = jwtTokenProvider.generateToken(user.getEmail());
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("message", "Login successful");
+                response.put("token", token);
+                response.put("user", Map.of(
+                    "email", user.getEmail(),
+                    "firstName", user.getFirstName(),
+                    "lastName", user.getLastName()
+                ));
+                
+                System.out.println("✅ OTP verified and login successful for: " + request.getEmail());
+                return ResponseEntity.ok(response);
+            } else {
+                System.out.println("❌ Invalid OTP for: " + request.getEmail());
+                return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Invalid OTP"));
             }
-
-            // Generate and send new OTP - NOW RETURNS MAP WITH OTP
-            Map<String, String> otpResponse = userService.generateAndSendOtp(email);
-            String otp = otpResponse.get("otp");
-            
-            System.out.println("📧 New OTP sent to: " + email + " - OTP: " + otp);
-            
-            // Return OTP in response for testing
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "New OTP sent to your email");
-            response.put("email", email);
-            response.put("otp", otp); // Include OTP in response for testing
-            response.put("note", "Use this new OTP for verification");
-            
-            return ResponseEntity.ok(response);
             
         } catch (Exception e) {
-            System.out.println("❌ Resend OTP failed: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("Failed to resend OTP: " + e.getMessage()));
+            System.out.println("💥 OTP verification error: " + e.getMessage());
+            return ResponseEntity.status(500)
+                .body(Map.of("error", "OTP verification failed: " + e.getMessage()));
         }
     }
 
@@ -448,4 +525,6 @@ public class AuthController {
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
     }
+    
+    
 }

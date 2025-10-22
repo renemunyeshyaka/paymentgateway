@@ -1,10 +1,10 @@
-// login.js - Fixed to match your backend API response format
+// login.js - Complete fixed version
 class AuthSystem {
     constructor() {
         this.currentForm = 'login';
         this.BASE_URL = 'https://kcoders.onrender.com/api/auth';
-//		this.BASE_URL = 'http://localhost:10000/api/auth';
         this.initializeEventListeners();
+        this.testBackendConnection(); // Test connection on load
     }
 
     initializeEventListeners() {
@@ -73,90 +73,126 @@ class AuthSystem {
         });
     }
 
-	// FIXED Login Handler - Proper OTP flow
-	async handleLogin() {
-	    const email = document.getElementById('loginEmail').value.trim();
-	    const password = document.getElementById('loginPassword').value;
-	    const captcha = document.querySelector('#loginForm input[name="captchaResponse"]').value.trim();
-	    
-	    console.log('🔐 Login attempt:', email);
-	    
-	    if (!this.validateLoginForm(email, password, captcha)) {
-	        return;
-	    }
+    async testBackendConnection() {
+        try {
+            console.log('🔍 Testing backend connection...');
+            const response = await fetch(`${this.BASE_URL}/health`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            
+            if (response.ok) {
+                console.log('✅ Backend is reachable');
+                return true;
+            } else {
+                console.log('⚠️ Backend health check failed:', response.status);
+                // Don't show error - backend might be up but without health endpoint
+                return true;
+            }
+        } catch (error) {
+            console.log('ℹ️ Backend health check not available - continuing anyway');
+            return true; // Continue anyway as backend might have different endpoints
+        }
+    }
 
-	    this.setLoadingState('login', true);
+    async handleLogin() {
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const captcha = document.querySelector('#loginForm input[name="captchaResponse"]').value.trim();
+        
+        console.log('🔐 Login attempt:', email);
+        
+        if (!this.validateLoginForm(email, password, captcha)) {
+            return;
+        }
 
-	    try {
-	        console.log('📤 Sending login request to:', `${this.BASE_URL}/login`);
-	        
-	        const loginData = {
-	            email: email,
-	            password: password
-	        };
-	        
-	        console.log('📤 Login payload:', { ...loginData, password: '***' });
+        this.setLoadingState('login', true);
 
-	        const response = await fetch(`${this.BASE_URL}/login`, {
-	            method: 'POST',
-	            headers: {
-	                'Content-Type': 'application/json',
-	            },
-	            body: JSON.stringify(loginData)
-	        });
+        try {
+            console.log('📤 Sending login request to:', `${this.BASE_URL}/login`);
+            
+            const loginData = {
+                email: email,
+                password: password
+            };
+            
+            console.log('📤 Login payload:', { ...loginData, password: '***' });
 
-	        console.log('📨 Response status:', response.status);
-	        
-	        const responseText = await response.text();
-	        console.log('📨 Raw response:', responseText);
-	        
-	        let data;
-	        try {
-	            data = JSON.parse(responseText);
-	        } catch (parseError) {
-	            console.error('❌ JSON parse error:', parseError);
-	            throw new Error('Server returned invalid response');
-	        }
-	        
-	        // PROPERLY HANDLE THE OTP RESPONSE
-	        if (response.ok) {
-	            console.log('✅ Login API success:', data);
-	            
-	            // ALWAYS expect OTP flow based on your backend
-	            if (data.message && data.message.includes('OTP sent')) {
-	                console.log('📧 OTP required - proceeding to OTP verification');
-	                
-	                this.showSuccessMessage('OTP sent to your email! Please check your email to complete login.');
-	                
-	                // Store email for OTP verification
-	                sessionStorage.setItem('pendingLoginEmail', email);
-	                
-	                // Redirect to OTP verification after short delay
-	                setTimeout(() => {
-	                    window.location.href = `verify-otp.html?email=${encodeURIComponent(email)}`;
-	                }, 2000);
-	                
-	            } else {
-	                // This should not happen with your current backend
-	                console.warn('⚠️ Unexpected response - no OTP mentioned:', data);
-	                this.showError('Unexpected server response. Please try again.', 'login');
-	            }
-	        } else {
-	            // Handle error response
-	            console.log('❌ Login failed:', data);
-	            const errorMessage = data.error || data.message || `Login failed (${response.status})`;
-	            this.showError(errorMessage, 'login');
-	        }
-	        
-	    } catch (error) {
-	        console.error('❌ Login process error:', error);
-	        this.showError(this.getUserFriendlyErrorMessage(error), 'login');
-	    } finally {
-	        this.setLoadingState('login', false);
-	    }
-	}
+            const response = await fetch(`${this.BASE_URL}/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginData)
+            });
 
-    // Fixed Registration Handler - Matches your backend API
+            console.log('📨 Response status:', response.status);
+            
+            const responseText = await response.text();
+            console.log('📨 Raw response:', responseText);
+            
+            let data;
+            try {
+                data = JSON.parse(responseText);
+            } catch (parseError) {
+                console.error('❌ JSON parse error:', parseError);
+                throw new Error('Server returned invalid response');
+            }
+            
+            if (response.ok) {
+                console.log('✅ Login API success:', data);
+                
+                // Handle OTP flow
+                if (data.message && data.message.includes('OTP')) {
+                    console.log('📧 OTP required - proceeding to OTP verification');
+                    
+                    this.showSuccessMessage('OTP sent to your email! Please check your email to complete login.');
+                    
+                    // Store email for OTP verification
+                    sessionStorage.setItem('pendingLoginEmail', email);
+                    
+                    // Show OTP for testing if available
+                    if (data.otp) {
+                        console.log('🎯 OTP for testing:', data.otp);
+                        this.showSuccessMessage(`OTP sent! Test OTP: ${data.otp} - Redirecting to verification...`);
+                    }
+                    
+                    // Redirect to OTP verification after short delay
+                    setTimeout(() => {
+                        window.location.href = `verify-otp.html?email=${encodeURIComponent(email)}`;
+                    }, 3000);
+                    
+                } else if (data.token) {
+                    // Direct login without OTP
+                    console.log('✅ Direct login successful');
+                    localStorage.setItem('authToken', data.token);
+                    if (data.user) {
+                        localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    }
+                    this.showSuccessMessage('Login successful! Redirecting...');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    console.warn('⚠️ Unexpected response:', data);
+                    this.showError('Unexpected server response. Please try again.', 'login');
+                }
+            } else {
+                console.log('❌ Login failed:', data);
+                const errorMessage = data.error || data.message || `Login failed (${response.status})`;
+                this.showError(errorMessage, 'login');
+            }
+            
+        } catch (error) {
+            console.error('❌ Login process error:', error);
+            this.showError(this.getUserFriendlyErrorMessage(error), 'login');
+        } finally {
+            this.setLoadingState('login', false);
+        }
+    }
+
     async handleRegistration() {
         const firstName = document.getElementById('registerFirstName').value.trim();
         const lastName = document.getElementById('registerLastName').value.trim();
@@ -186,7 +222,6 @@ class AuthSystem {
                     lastName: lastName,
                     email: email,
                     password: password
-                    // Note: Your backend doesn't use confirmPassword, so we don't send it
                 })
             });
 
@@ -203,7 +238,6 @@ class AuthSystem {
                 throw new Error('Server returned invalid response');
             }
 
-            // Handle response based on your backend structure
             if (response.ok) {
                 console.log('✅ Registration successful:', data);
                 
@@ -230,7 +264,6 @@ class AuthSystem {
         }
     }
 
-    // Validation Methods
     validateLoginForm(email, password, captcha) {
         let isValid = true;
         this.clearErrors('login');
@@ -311,7 +344,6 @@ class AuthSystem {
         return isValid;
     }
 
-    // Utility Methods
     isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
@@ -427,11 +459,15 @@ class AuthSystem {
 
     getUserFriendlyErrorMessage(error) {
         if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-            return 'Network error. Please check your internet connection and make sure the backend server is running.';
+            return 'Backend service is currently unavailable. Please try again in a few minutes.';
         } else if (error.message.includes('JSON')) {
             return 'Server configuration error. Please contact administrator.';
         } else if (error.message.includes('CORS')) {
             return 'Cross-origin request blocked. Please check server CORS configuration.';
+        } else if (error.message.includes('Bad Gateway') || error.message.includes('502')) {
+            return 'Backend service is restarting. Please wait a moment and try again.';
+        } else if (error.message.includes('Gateway Timeout') || error.message.includes('504')) {
+            return 'Backend service is taking too long to respond. Please try again.';
         } else {
             return error.message || 'An unexpected error occurred. Please try again.';
         }
