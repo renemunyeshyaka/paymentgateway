@@ -3,6 +3,7 @@
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/config/WebConfig.java
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/controller/AuthController.java
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/controller/DebugController.java
+/home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/controller/HealthController.java
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/controller/PasswordResetController.java
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/dto/ApiResponse.java
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/dto/LoginRequest.java
@@ -13,6 +14,7 @@
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/entity/OtpToken.java
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/entity/PasswordResetToken.java
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/entity/User.java
+/home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/exception/GlobalExceptionHandler.java
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/repository/OtpTokenRepository.java
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/repository/PasswordResetTokenRepository.java
 /home/sdragon/git/paymentgateway/src/main/java/com/paymentgateway/repository/UserRepository.java
