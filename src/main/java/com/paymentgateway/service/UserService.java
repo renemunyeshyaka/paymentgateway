@@ -2,6 +2,7 @@
 package com.paymentgateway.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -31,6 +32,9 @@ public class UserService implements UserDetailsService {
     
     @Autowired
     private EmailService emailService;
+    
+    @Value("${app.email.verification.enabled:true}")
+    private boolean emailVerificationEnabled;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -70,11 +74,31 @@ public class UserService implements UserDetailsService {
             System.out.println("✅ Password encoded for: " + user.getEmail());
             
             // Set activation details and default values
+			/*
+			 * String activationToken = UUID.randomUUID().toString();
+			 * user.setActivationToken(activationToken);
+			 * user.setActivationTokenExpiry(LocalDateTime.now().plusHours(24));
+			 * user.setIsActive(false); user.setMfaEnabled(false);
+			 */
+            
+         // Set activation details and default values
             String activationToken = UUID.randomUUID().toString();
             user.setActivationToken(activationToken);
             user.setActivationTokenExpiry(LocalDateTime.now().plusHours(24));
-            user.setIsActive(false);
+
+            // Auto-activate if email verification is disabled
+            if (!emailVerificationEnabled) {
+                user.setIsActive(true);
+                System.out.println("✅ AUTO-ACTIVATION: User activated immediately - " + user.getEmail());
+            } else {
+                user.setIsActive(false);
+                System.out.println("⏳ EMAIL VERIFICATION: User requires activation - " + user.getEmail());
+            }
+
             user.setMfaEnabled(false);
+            
+            
+            
             user.setRole("USER"); // Set default role
             user.setCreatedAt(LocalDateTime.now());
             user.setUpdatedAt(LocalDateTime.now());
@@ -83,15 +107,35 @@ public class UserService implements UserDetailsService {
             User savedUser = userRepository.save(user);
             System.out.println("✅ User saved with ID: " + savedUser.getId());
             
-            // Send activation email (but don't fail if email doesn't work)
-            try {
-                String userName = savedUser.getFirstName() + " " + savedUser.getLastName();
-                System.out.println("📧 Sending activation email to: " + savedUser.getEmail());
-                emailService.sendActivationEmail(savedUser.getEmail(), userName);
-            } catch (Exception emailException) {
-                System.out.println("⚠️ Activation email failed, but user was registered: " + emailException.getMessage());
-                // Don't throw the exception - user is still registered successfully
+			/*
+			 * // Send activation email (but don't fail if email doesn't work) try { String
+			 * userName = savedUser.getFirstName() + " " + savedUser.getLastName();
+			 * System.out.println("📧 Sending activation email to: " +
+			 * savedUser.getEmail()); emailService.sendActivationEmail(savedUser.getEmail(),
+			 * userName); } catch (Exception emailException) {
+			 * System.out.println("⚠️ Activation email failed, but user was registered: " +
+			 * emailException.getMessage()); // Don't throw the exception - user is still
+			 * registered successfully }
+			 */
+            
+         // Send activation email only if email verification is enabled
+            if (emailVerificationEnabled) {
+                try {
+                    String userName = savedUser.getFirstName() + " " + savedUser.getLastName();
+                    System.out.println("📧 Sending activation email to: " + savedUser.getEmail());
+                    emailService.sendActivationEmail(savedUser.getEmail(), userName, activationToken);
+                } catch (Exception emailException) {
+                    System.out.println("⚠️ Activation email failed, but user was registered: " + emailException.getMessage());
+                    // Don't throw the exception - user is still registered successfully
+                }
+            } else {
+                System.out.println("✅ SKIPPING EMAIL: Auto-activation enabled for: " + savedUser.getEmail());
             }
+            
+            
+            
+            
+            
             
             System.out.println("🎉 Registration completed successfully for: " + savedUser.getEmail());
             return savedUser; // ← MAKE SURE THIS RETURN STATEMENT EXISTS!
@@ -158,29 +202,7 @@ public class UserService implements UserDetailsService {
         }
     }
 
-	/*
-	 * public String generateAndSendOtp(String email) { try {
-	 * System.out.println("🔧 Generating OTP for: " + email); User user =
-	 * userRepository.findByEmail(email) .orElseThrow(() -> new
-	 * RuntimeException("User not found"));
-	 * 
-	 * if (!user.getIsActive()) { throw new
-	 * RuntimeException("Account is not activated"); }
-	 * 
-	 * // Generate 6-digit OTP String otp = String.format("%06d", (int)
-	 * (Math.random() * 1000000)); user.setOtp(passwordEncoder.encode(otp));
-	 * user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
-	 * userRepository.save(user);
-	 * 
-	 * // Send OTP email emailService.sendOtpEmail(user.getEmail(), otp);
-	 * System.out.println("✅ OTP generated and sent: " + otp + " for " + email);
-	 * 
-	 * return otp;
-	 * 
-	 * } catch (Exception e) { System.out.println("❌ OTP generation failed: " +
-	 * e.getMessage()); throw new RuntimeException("Failed to generate OTP: " +
-	 * e.getMessage()); } }
-	 */
+	
     
     public String generateAndSendOtp(String email) {
         try {
@@ -375,5 +397,6 @@ public class UserService implements UserDetailsService {
             System.out.println("❌ Debug error: " + e.getMessage());
         }
     }
+    
     
 }
