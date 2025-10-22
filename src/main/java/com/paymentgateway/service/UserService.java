@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Service
@@ -32,6 +34,9 @@ public class UserService implements UserDetailsService {
     
     @Autowired
     private EmailService emailService;
+    
+    @Autowired
+    private OtpService otpService;
     
     @Value("${app.email.verification.enabled:true}")
     private boolean emailVerificationEnabled;
@@ -74,14 +79,6 @@ public class UserService implements UserDetailsService {
             System.out.println("✅ Password encoded for: " + user.getEmail());
             
             // Set activation details and default values
-			/*
-			 * String activationToken = UUID.randomUUID().toString();
-			 * user.setActivationToken(activationToken);
-			 * user.setActivationTokenExpiry(LocalDateTime.now().plusHours(24));
-			 * user.setIsActive(false); user.setMfaEnabled(false);
-			 */
-            
-         // Set activation details and default values
             String activationToken = UUID.randomUUID().toString();
             user.setActivationToken(activationToken);
             user.setActivationTokenExpiry(LocalDateTime.now().plusHours(24));
@@ -96,9 +93,6 @@ public class UserService implements UserDetailsService {
             }
 
             user.setMfaEnabled(false);
-            
-            
-            
             user.setRole("USER"); // Set default role
             user.setCreatedAt(LocalDateTime.now());
             user.setUpdatedAt(LocalDateTime.now());
@@ -107,23 +101,11 @@ public class UserService implements UserDetailsService {
             User savedUser = userRepository.save(user);
             System.out.println("✅ User saved with ID: " + savedUser.getId());
             
-			/*
-			 * // Send activation email (but don't fail if email doesn't work) try { String
-			 * userName = savedUser.getFirstName() + " " + savedUser.getLastName();
-			 * System.out.println("📧 Sending activation email to: " +
-			 * savedUser.getEmail()); emailService.sendActivationEmail(savedUser.getEmail(),
-			 * userName); } catch (Exception emailException) {
-			 * System.out.println("⚠️ Activation email failed, but user was registered: " +
-			 * emailException.getMessage()); // Don't throw the exception - user is still
-			 * registered successfully }
-			 */
-            
-         // Send activation email only if email verification is enabled
+            // Send activation email only if email verification is enabled
             if (emailVerificationEnabled) {
                 try {
                     String userName = savedUser.getFirstName() + " " + savedUser.getLastName();
                     System.out.println("📧 Sending activation email to: " + savedUser.getEmail());
-                    //emailService.sendActivationEmail(savedUser.getEmail(), userName, activationToken);
                     emailService.sendActivationEmail(savedUser.getEmail(), userName);
                 } catch (Exception emailException) {
                     System.out.println("⚠️ Activation email failed, but user was registered: " + emailException.getMessage());
@@ -133,13 +115,8 @@ public class UserService implements UserDetailsService {
                 System.out.println("✅ SKIPPING EMAIL: Auto-activation enabled for: " + savedUser.getEmail());
             }
             
-            
-            
-            
-            
-            
             System.out.println("🎉 Registration completed successfully for: " + savedUser.getEmail());
-            return savedUser; // ← MAKE SURE THIS RETURN STATEMENT EXISTS!
+            return savedUser;
             
         } catch (Exception e) {
             System.out.println("💥 Registration failed for " + user.getEmail() + ": " + e.getMessage());
@@ -203,9 +180,8 @@ public class UserService implements UserDetailsService {
         }
     }
 
-	
-    
-    public String generateAndSendOtp(String email) {
+    // UPDATED METHOD: Returns OTP in response for testing
+    public Map<String, String> generateAndSendOtp(String email) {
         try {
             System.out.println("🔧 Generating OTP for: " + email);
             User user = userRepository.findByEmail(email)
@@ -215,11 +191,11 @@ public class UserService implements UserDetailsService {
                 throw new RuntimeException("Account is not activated");
             }
             
-            // Generate 6-digit OTP
-            String otp = String.format("%06d", (int) (Math.random() * 1000000));
-            System.out.println("🔢 Generated OTP: " + otp);
+            // Use OtpService to generate OTP and return it for testing
+            Map<String, String> otpResponse = otpService.generateOtpWithResponse(user);
+            String otp = otpResponse.get("otp");
             
-            // Store encoded OTP
+            // Store encoded OTP in database as backup
             user.setOtp(passwordEncoder.encode(otp));
             user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
             userRepository.save(user);
@@ -234,17 +210,26 @@ public class UserService implements UserDetailsService {
                 // Don't throw the exception - just log it and continue
             }
             
-            return otp;
+            // Return OTP in response for testing
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "OTP generated successfully");
+            response.put("otp", otp); // Include OTP in response for testing
+            response.put("email", email);
+            response.put("note", "Check console for OTP. Use this for testing.");
+            
+            System.out.println("🎯 TESTING: OTP for " + email + " is: " + otp);
+            System.out.println("💡 Display this OTP to the user for testing purposes");
+            
+            return response;
             
         } catch (Exception e) {
             System.out.println("❌ OTP generation failed: " + e.getMessage());
-            e.printStackTrace();
             throw new RuntimeException("Failed to generate OTP: " + e.getMessage());
         }
     }
     
-    
-    public String generateOtpWithoutEmail(String email) {
+    // UPDATED METHOD: Generate OTP without attempting to send email
+    public Map<String, String> generateOtpWithoutEmail(String email) {
         try {
             System.out.println("🔧 Generating OTP without email for: " + email);
             User user = userRepository.findByEmail(email)
@@ -254,16 +239,25 @@ public class UserService implements UserDetailsService {
                 throw new RuntimeException("Account is not activated");
             }
             
-            // Generate 6-digit OTP
-            String otp = String.format("%06d", (int) (Math.random() * 1000000));
-            System.out.println("🔢 Generated OTP: " + otp);
+            // Use OtpService to generate OTP
+            Map<String, String> otpResponse = otpService.generateOtpWithResponse(user);
+            String otp = otpResponse.get("otp");
             
             // Store encoded OTP
             user.setOtp(passwordEncoder.encode(otp));
             user.setOtpExpiry(LocalDateTime.now().plusMinutes(10));
             userRepository.save(user);
             
-            return otp;
+            // Return OTP in response for testing
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "OTP generated successfully (no email sent)");
+            response.put("otp", otp); // Include OTP in response for testing
+            response.put("email", email);
+            response.put("note", "This OTP is for testing purposes only");
+            
+            System.out.println("🎯 OTP for testing: " + otp);
+            
+            return response;
             
         } catch (Exception e) {
             System.out.println("❌ OTP generation failed: " + e.getMessage());
@@ -271,10 +265,10 @@ public class UserService implements UserDetailsService {
         }
     }
     
-
-    public boolean verifyOtp(String email, String otp) {
+    // NEW METHOD: Quick OTP generation for testing (uses in-memory storage only)
+    public Map<String, String> generateQuickOtp(String email) {
         try {
-            System.out.println("🔧 Verifying OTP for: " + email);
+            System.out.println("🔧 Generating quick OTP for testing: " + email);
             User user = userRepository.findByEmail(email)
                     .orElseThrow(() -> new RuntimeException("User not found"));
             
@@ -282,18 +276,58 @@ public class UserService implements UserDetailsService {
                 throw new RuntimeException("Account is not activated");
             }
             
-            boolean isValid = user.isOtpValid() && passwordEncoder.matches(otp, user.getOtp());
+            // Use OtpService for quick in-memory OTP
+            String otp = otpService.generateOtpForTesting(user);
             
-            if (isValid) {
+            // Return OTP immediately for testing
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Quick OTP generated for testing");
+            response.put("otp", otp);
+            response.put("email", email);
+            response.put("validity", "10 minutes");
+            response.put("note", "Use this OTP for immediate testing");
+            
+            System.out.println("🚀 QUICK OTP for " + email + ": " + otp);
+            
+            return response;
+            
+        } catch (Exception e) {
+            System.out.println("❌ Quick OTP generation failed: " + e.getMessage());
+            throw new RuntimeException("Failed to generate OTP: " + e.getMessage());
+        }
+    }
+
+    public boolean verifyOtp(String email, String otp) {
+        try {
+            System.out.println("🔧 Verifying OTP for: " + email);
+            
+            // First try in-memory OTP validation
+            boolean inMemoryValid = otpService.validateOtp(email, otp);
+            if (inMemoryValid) {
+                System.out.println("✅ OTP verified successfully (in-memory) for: " + email);
+                return true;
+            }
+            
+            // Fallback to database OTP validation
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            if (!user.getIsActive()) {
+                throw new RuntimeException("Account is not activated");
+            }
+            
+            boolean dbValid = user.isOtpValid() && passwordEncoder.matches(otp, user.getOtp());
+            
+            if (dbValid) {
                 user.setOtp(null);
                 user.setOtpExpiry(null);
                 userRepository.save(user);
-                System.out.println("✅ OTP verified successfully for: " + email);
+                System.out.println("✅ OTP verified successfully (database) for: " + email);
             } else {
                 System.out.println("❌ OTP verification failed for: " + email);
             }
             
-            return isValid;
+            return dbValid;
             
         } catch (Exception e) {
             System.out.println("❌ OTP verification error: " + e.getMessage());
@@ -398,6 +432,4 @@ public class UserService implements UserDetailsService {
             System.out.println("❌ Debug error: " + e.getMessage());
         }
     }
-    
-    
 }

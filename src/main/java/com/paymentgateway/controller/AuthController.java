@@ -115,13 +115,18 @@ public class AuthController {
 
             System.out.println("✅ Authentication successful for: " + loginRequest.getEmail());
 
-            // Generate and send OTP
-            String otp = userService.generateAndSendOtp(loginRequest.getEmail());
-            System.out.println("📧 OTP sent to: " + loginRequest.getEmail() + " - OTP: " + otp);
+            // Generate and send OTP - NOW RETURNS MAP WITH OTP
+            Map<String, String> otpResponse = userService.generateAndSendOtp(loginRequest.getEmail());
+            String otp = otpResponse.get("otp");
             
-            Map<String, String> response = new HashMap<>();
+            System.out.println("📧 OTP generated for: " + loginRequest.getEmail() + " - OTP: " + otp);
+            
+            // Return the OTP in response for testing
+            Map<String, Object> response = new HashMap<>();
             response.put("message", "OTP sent to your email. Please verify to complete login.");
             response.put("email", loginRequest.getEmail());
+            response.put("otp", otp); // Include OTP in response for testing
+            response.put("note", "Use this OTP for verification. Check console for details.");
             
             return ResponseEntity.ok(response);
             
@@ -189,13 +194,18 @@ public class AuthController {
                 return ResponseEntity.badRequest().body(createErrorResponse("Email is required"));
             }
 
-            // Generate and send new OTP
-            String otp = userService.generateAndSendOtp(email);
+            // Generate and send new OTP - NOW RETURNS MAP WITH OTP
+            Map<String, String> otpResponse = userService.generateAndSendOtp(email);
+            String otp = otpResponse.get("otp");
+            
             System.out.println("📧 New OTP sent to: " + email + " - OTP: " + otp);
             
-            Map<String, String> response = new HashMap<>();
+            // Return OTP in response for testing
+            Map<String, Object> response = new HashMap<>();
             response.put("message", "New OTP sent to your email");
             response.put("email", email);
+            response.put("otp", otp); // Include OTP in response for testing
+            response.put("note", "Use this new OTP for verification");
             
             return ResponseEntity.ok(response);
             
@@ -203,6 +213,71 @@ public class AuthController {
             System.out.println("❌ Resend OTP failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(createErrorResponse("Failed to resend OTP: " + e.getMessage()));
+        }
+    }
+
+    // NEW ENDPOINT: Quick OTP for testing (bypasses email)
+    @PostMapping("/quick-otp")
+    public ResponseEntity<?> generateQuickOtp(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            System.out.println("🚀 QUICK OTP: Request for: " + email);
+            
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(createErrorResponse("Email is required"));
+            }
+
+            // Generate quick OTP (in-memory only, no email)
+            Map<String, String> otpResponse = userService.generateQuickOtp(email);
+            
+            System.out.println("🎯 Quick OTP generated for testing: " + email + " - OTP: " + otpResponse.get("otp"));
+            
+            // Return OTP immediately for testing
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Quick OTP generated for testing");
+            response.put("email", email);
+            response.put("otp", otpResponse.get("otp"));
+            response.put("validity", "10 minutes");
+            response.put("note", "Use this OTP immediately for testing. No email sent.");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.out.println("❌ Quick OTP generation failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Failed to generate quick OTP: " + e.getMessage()));
+        }
+    }
+
+    // NEW ENDPOINT: Generate OTP without email
+    @PostMapping("/otp-without-email")
+    public ResponseEntity<?> generateOtpWithoutEmail(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            System.out.println("📱 OTP WITHOUT EMAIL: Request for: " + email);
+            
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(createErrorResponse("Email is required"));
+            }
+
+            // Generate OTP without sending email
+            Map<String, String> otpResponse = userService.generateOtpWithoutEmail(email);
+            
+            System.out.println("📱 OTP generated without email for: " + email + " - OTP: " + otpResponse.get("otp"));
+            
+            // Return OTP in response
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "OTP generated successfully (no email sent)");
+            response.put("email", email);
+            response.put("otp", otpResponse.get("otp"));
+            response.put("note", "This OTP is stored in database and can be used for verification");
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            System.out.println("❌ OTP generation failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("Failed to generate OTP: " + e.getMessage()));
         }
     }
 
